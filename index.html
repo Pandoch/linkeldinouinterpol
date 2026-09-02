@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LINKEDIN // INTERPOL — Classification Protocol</title>
+  <meta name="description" content="Jeu de classification futuriste : LinkedIn ou Interpol ? Déterminez si le sujet est un professionnel ou un fugitif recherché.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔴</text></svg>">
+</head>
+<body>
+  <!-- Scanlines + CRT overlay -->
+  <div class="scanlines"></div>
+  <div class="vignette"></div>
+  <div class="noise"></div>
+
+  <!-- Background grid -->
+  <div class="bg-grid"></div>
+  <div class="bg-particles" id="particles"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <span class="logo-icon">◈</span>
+      <span class="logo-text">CLASSIFICATION<span class="accent">.</span>PROTOCOL</span>
+    </div>
+    <div class="header-right">
+      <div class="status-indicator">
+        <span class="pulse"></span>
+        <span id="connection-status">SECURE LINK</span>
+      </div>
+      <button id="btn-mute" class="icon-btn" title="Son">🔊</button>
+    </div>
+  </header>
+
+  <!-- Main screens -->
+  <main id="app">
+
+    <!-- ===== HOME ===== -->
+    <section id="screen-home" class="screen active">
+      <div class="hero">
+        <div class="hero-badge">INTERPOL × LINKEDIN // 2026</div>
+        <h1 class="glitch" data-text="LINKEDIN OU INTERPOL">
+          LINKEDIN<br><span class="or">OU</span><br>INTERPOL
+        </h1>
+        <p class="tagline">Protocole de classification d'identité.<br>Analysez le sujet. Déterminez son statut.</p>
+        
+        <div class="mode-cards">
+          <button class="mode-card" id="btn-solo">
+            <div class="mode-icon">◉</div>
+            <div class="mode-title">SOLO</div>
+            <div class="mode-desc">Mission individuelle<br>Score & streak</div>
+          </button>
+          <button class="mode-card" id="btn-multi">
+            <div class="mode-icon">◎</div>
+            <div class="mode-title">MULTI</div>
+            <div class="mode-desc">Salle privée<br>Jusqu'à 8 agents</div>
+          </button>
+        </div>
+
+        <div class="home-stats">
+          <div class="stat">
+            <span class="stat-value" id="best-score">0</span>
+            <span class="stat-label">MEILLEUR SCORE</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value" id="best-streak">0</span>
+            <span class="stat-label">MEILLEURE SÉRIE</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SOLO GAME ===== -->
+    <section id="screen-solo" class="screen">
+      <div class="game-hud">
+        <div class="hud-left">
+          <button class="back-btn" id="btn-back-solo">← RETOUR</button>
+        </div>
+        <div class="hud-center">
+          <div class="round-info">ROUND <span id="solo-round">1</span></div>
+        </div>
+        <div class="hud-right">
+          <div class="score-box">
+            <span class="score-label">SCORE</span>
+            <span class="score-value" id="solo-score">0</span>
+          </div>
+          <div class="streak-box">
+            <span class="streak-label">STREAK</span>
+            <span class="streak-value" id="solo-streak">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="subject-card" id="solo-card">
+        <div class="card-header">
+          <span class="card-id">SUBJECT #<span id="solo-id">0000</span></span>
+          <span class="card-status" id="solo-status">ANALYZING...</span>
+        </div>
+        
+        <div class="photo-container">
+          <div class="photo-frame">
+            <img id="solo-photo" src="" alt="Subject" class="subject-photo">
+            <div class="photo-scan"></div>
+            <div class="photo-corners">
+              <span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="subject-info">
+          <h2 class="subject-name" id="solo-name">LOADING...</h2>
+          <div class="subject-meta">
+            <span id="solo-nat">—</span>
+            <span class="sep">•</span>
+            <span id="solo-age">—</span>
+          </div>
+        </div>
+
+        <div class="choice-buttons" id="solo-choices">
+          <button class="choice-btn linkedin" id="btn-linkedin">
+            <span class="choice-icon">💼</span>
+            <span class="choice-label">LINKEDIN</span>
+            <span class="choice-sub">Professionnel</span>
+          </button>
+          <button class="choice-btn interpol" id="btn-interpol">
+            <span class="choice-icon">🔴</span>
+            <span class="choice-label">INTERPOL</span>
+            <span class="choice-sub">Fugitif recherché</span>
+          </button>
+        </div>
+
+        <div class="result-panel" id="solo-result" hidden>
+          <div class="result-banner" id="solo-result-banner">
+            <span class="result-icon" id="solo-result-icon"></span>
+            <span class="result-text" id="solo-result-text"></span>
+          </div>
+          <div class="result-details" id="solo-result-details"></div>
+          <button class="next-btn" id="btn-next-solo">PROCHAIN SUJET →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== MULTI LOBBY ===== -->
+    <section id="screen-lobby" class="screen">
+      <div class="lobby-container">
+        <button class="back-btn" id="btn-back-lobby">← RETOUR</button>
+        
+        <h2 class="section-title">SALLE D'OPÉRATIONS</h2>
+        
+        <div class="lobby-modes">
+          <div class="lobby-card">
+            <h3>CRÉER UNE SALLE</h3>
+            <p>Vous devenez l'hôte. Partagez le code.</p>
+            <input type="text" id="host-name" placeholder="Votre nom d'agent" maxlength="12" class="input-field">
+            <button class="action-btn" id="btn-create-room">CRÉER SALLE</button>
+          </div>
+          
+          <div class="lobby-divider">OU</div>
+          
+          <div class="lobby-card">
+            <h3>REJOINDRE</h3>
+            <p>Entrez le code de la salle.</p>
+            <input type="text" id="join-name" placeholder="Votre nom d'agent" maxlength="12" class="input-field">
+            <input type="text" id="join-code" placeholder="Collez le code complet de la salle" class="input-field code-input">
+            <button class="action-btn secondary" id="btn-join-room">REJOINDRE</button>
+          </div>
+        </div>
+
+        <div class="lobby-note">
+          <p>⚡ Multijoueur temps réel via <strong>PeerJS</strong> (P2P — 100% compatible GitHub Pages)</p>
+          <p>L'hôte copie le code complet et le partage. Aucun serveur backend requis.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== MULTI ROOM ===== -->
+    <section id="screen-room" class="screen">
+      <div class="room-header">
+        <button class="back-btn" id="btn-leave-room">← QUITTER</button>
+        <div class="room-code-display">
+          CODE: <span id="room-code">------</span>
+          <button class="copy-btn" id="btn-copy-code" title="Copier">⧉</button>
+        </div>
+        <div class="players-count"><span id="players-count">1</span> AGENTS</div>
+      </div>
+
+      <div class="room-layout">
+        <div class="players-panel">
+          <h3>AGENTS CONNECTÉS</h3>
+          <ul id="players-list" class="players-list"></ul>
+          <div class="host-controls" id="host-controls" hidden>
+            <button class="action-btn" id="btn-start-game">LANCER LA MISSION</button>
+          </div>
+        </div>
+
+        <div class="room-game" id="room-game" hidden>
+          <!-- Same structure as solo but multi -->
+          <div class="subject-card compact">
+            <div class="card-header">
+              <span class="card-id">SUBJECT #<span id="multi-id">0000</span></span>
+              <span class="card-status" id="multi-status">EN ATTENTE</span>
+            </div>
+            <div class="photo-container">
+              <div class="photo-frame">
+                <img id="multi-photo" src="" alt="Subject" class="subject-photo">
+                <div class="photo-scan"></div>
+              </div>
+            </div>
+            <div class="subject-info">
+              <h2 class="subject-name" id="multi-name">—</h2>
+              <div class="subject-meta">
+                <span id="multi-nat">—</span> • <span id="multi-age">—</span>
+              </div>
+            </div>
+            <div class="choice-buttons" id="multi-choices">
+              <button class="choice-btn linkedin" id="btn-multi-linkedin">
+                <span class="choice-icon">💼</span>
+                <span class="choice-label">LINKEDIN</span>
+              </button>
+              <button class="choice-btn interpol" id="btn-multi-interpol">
+                <span class="choice-icon">🔴</span>
+                <span class="choice-label">INTERPOL</span>
+              </button>
+            </div>
+            <div class="result-panel" id="multi-result" hidden>
+              <div class="result-banner" id="multi-result-banner"></div>
+              <div class="votes-summary" id="votes-summary"></div>
+              <button class="next-btn" id="btn-next-multi" hidden>PROCHAIN →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== RESULTS / END ===== -->
+    <section id="screen-end" class="screen">
+      <div class="end-container">
+        <h2 class="section-title">MISSION TERMINÉE</h2>
+        <div class="final-score">
+          <span class="final-label">SCORE FINAL</span>
+          <span class="final-value" id="final-score">0</span>
+        </div>
+        <div class="end-stats">
+          <div>Corrects: <span id="end-correct">0</span></div>
+          <div>Meilleure série: <span id="end-streak">0</span></div>
+        </div>
+        <button class="action-btn" id="btn-replay">REJOUER</button>
+        <button class="action-btn secondary" id="btn-home">ACCUEIL</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast notifications -->
+  <div id="toast" class="toast" hidden></div>
+
+  <!-- Loading overlay -->
+  <div id="loader" class="loader" hidden>
+    <div class="loader-content">
+      <div class="loader-spinner"></div>
+      <div class="loader-text" id="loader-text">CONNEXION SÉCURISÉE...</div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
