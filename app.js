@@ -6,6 +6,8 @@
 (() => {
   'use strict';
 
+  const MAX_ROUNDS = 10;
+
   // ========== STATE ==========
   const state = {
     mode: null, // 'solo' | 'multi'
@@ -27,6 +29,7 @@
     players: new Map(), // peerId -> { name, score, ready, vote }
     myName: '',
     multiRound: 0,
+    corrects: 0,
     multiSubject: null,
     votes: new Map(), // peerId -> 'linkedin'|'interpol'
     gameStarted: false
@@ -156,6 +159,7 @@
     state.score = 0;
     state.streak = 0;
     state.round = 0;
+    state.corrects = 0;
     state.answered = false;
     updateSoloHUD();
     showScreen('solo');
@@ -204,6 +208,7 @@
     if (correct) {
       state.score += 100 + state.streak * 25;
       state.streak++;
+      state.corrects++;
       playBeep(660, 0.12, 'sine');
     } else {
       state.streak = 0;
@@ -235,12 +240,28 @@
 
     $('#solo-result').hidden = false;
     $('#solo-choices').hidden = true;
+
+    // After 10 rounds → end game
+    const nextBtn = $('#btn-next-solo');
+    if (state.round >= MAX_ROUNDS) {
+      nextBtn.textContent = 'VOIR LES RÉSULTATS →';
+    } else {
+      nextBtn.textContent = 'PROCHAIN SUJET →';
+    }
+  }
+
+
+  function endSoloGame() {
+    $('#final-score').textContent = state.score;
+    $('#end-correct').textContent = state.corrects + ' / ' + MAX_ROUNDS;
+    $('#end-streak').textContent = state.streak; // dernière série de la partie
+    showScreen('end');
   }
 
   function updateSoloHUD() {
     $('#solo-score').textContent = state.score;
     $('#solo-streak').textContent = state.streak;
-    $('#solo-round').textContent = state.round;
+    $('#solo-round').textContent = state.round + ' / ' + MAX_ROUNDS;
   }
 
   function updateHomeStats() {
@@ -387,6 +408,10 @@
         showMultiResult(data);
         break;
 
+      case 'game-over':
+        endMultiGame(data.scores);
+        break;
+
       case 'score-update':
         if (state.players.has(data.id)) {
           state.players.get(data.id).score = data.score;
@@ -502,6 +527,12 @@
 
   async function startMultiRound() {
     if (!state.isHost) return;
+    if (state.multiRound >= MAX_ROUNDS) {
+      // End multi game
+      broadcast({ type: 'game-over', scores: Array.from(state.players.entries()).map(([id, p]) => ({ id, name: p.name, score: p.score })) });
+      endMultiGame();
+      return;
+    }
     state.multiRound++;
     showLoader('NOUVEAU SUJET...');
     const subject = await generateSubject();
@@ -625,7 +656,28 @@
 
     if (state.isHost) {
       $('#btn-next-multi').hidden = false;
+      if (state.multiRound >= MAX_ROUNDS) {
+        $('#btn-next-multi').textContent = 'VOIR LES RÉSULTATS →';
+      } else {
+        $('#btn-next-multi').textContent = 'PROCHAIN →';
+      }
     }
+  }
+
+
+  function endMultiGame(scores) {
+    // Find my score
+    let myScore = 0;
+    if (scores) {
+      const me = scores.find(s => s.id === state.peerId);
+      if (me) myScore = me.score;
+    } else if (state.players.has(state.peerId)) {
+      myScore = state.players.get(state.peerId).score;
+    }
+    $('#final-score').textContent = myScore;
+    $('#end-correct').textContent = '—';
+    $('#end-streak').textContent = '—';
+    showScreen('end');
   }
 
   // ========== EVENTS ==========
@@ -646,7 +698,11 @@
     $('#btn-interpol').addEventListener('click', () => handleSoloChoice('interpol'));
     $('#btn-next-solo').addEventListener('click', () => {
       playBeep(440);
-      nextSoloRound();
+      if (state.round >= MAX_ROUNDS) {
+        endSoloGame();
+      } else {
+        nextSoloRound();
+      }
     });
 
     // Lobby
@@ -682,7 +738,14 @@
     });
 
     // End
-    $('#btn-replay').addEventListener('click', () => startSolo());
+    $('#btn-replay').addEventListener('click', () => {
+      if (state.mode === 'multi') {
+        // Go back to lobby for multi
+        showScreen('lobby');
+      } else {
+        startSolo();
+      }
+    });
     $('#btn-home').addEventListener('click', () => showScreen('home'));
 
     // Mute
